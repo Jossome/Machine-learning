@@ -103,7 +103,7 @@ public class DecisionTree {
 			}
 		}
 		double pct = (double)ncorrect / ntested * 100;
-		System.out.format("correct: %d/%d (%.2f)%%", ncorrect, ntested, pct);
+		System.out.format("correct: %d/%d (%.2f)%%\n", ncorrect, ntested, pct);
 	}
 
 }

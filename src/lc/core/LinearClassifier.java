@@ -35,6 +35,7 @@ abstract public class LinearClassifier {
 	 * This value is: Threshold(w \cdot x)
 	 */
 	public double eval(double[] x) {
+//		System.out.println(VectorOps.dot(this.weights, x));
 		return threshold(VectorOps.dot(this.weights, x));
 	}
 	
