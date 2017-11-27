@@ -41,7 +41,7 @@ abstract public class NeuronUnit implements Unit {
 	public void setInputUnit(int i, Unit u) {
 		this.inputs[i] = u;
 		if (u instanceof NeuronUnit) {
-			NeuronUnit nu = (NeuronUnit)u;
+			NeuronUnit nu = (NeuronUnit) u;
 			nu.outgoingConnections.add(this);
 		}
 	}
@@ -86,6 +86,13 @@ abstract public class NeuronUnit implements Unit {
 			sum +=  this.weights[i] * this.inputs[i].getOutput();
 		}
 		return sum;
+	}
+	
+	public double getInputValue(int i) {
+		if (this.inputs[i] instanceof NeuronUnit)
+			return ((NeuronUnit) this.inputs[i]).getOutput();
+		else
+			return ((InputUnit) this.inputs[i]).getOutput();
 	}
 	
 	/**
