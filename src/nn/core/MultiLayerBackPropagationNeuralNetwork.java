@@ -181,7 +181,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 	static public void main(String[] args) {
 		ArrayList<Example> examples = new ArrayList<Example>();
 		
-		try (BufferedReader br = new BufferedReader(new FileReader("D:/Jossome/Programs/AI/project4/Machine-learning/src/nn/core/iris.data.txt"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(args[0]))) {
 			String line = "";
             while ((line = br.readLine()) != null) {
                 String[] sample = line.split(",");

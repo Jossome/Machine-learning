@@ -9,9 +9,9 @@ import java.util.List;
 abstract public class NeuronUnit implements Unit {
 	
 	public NeuronUnit(int ninputs) {
-		this.inputs = new Unit[ninputs];
-		this.weights = new double[ninputs];
-		this.inputs[0] = new ConstantUnit(1.0);
+		this.inputs = new Unit[ninputs + 1];
+		this.weights = new double[ninputs + 1];
+		this.inputs[ninputs] = new ConstantUnit(1.0);
 	}
 	
 	/**
@@ -91,8 +91,10 @@ abstract public class NeuronUnit implements Unit {
 	public double getInputValue(int i) {
 		if (this.inputs[i] instanceof NeuronUnit)
 			return ((NeuronUnit) this.inputs[i]).getOutput();
-		else
+		else if (this.inputs[i] instanceof InputUnit)
 			return ((InputUnit) this.inputs[i]).getOutput();
+        else
+            return ((ConstantUnit) this.inputs[i]).getOutput();
 	}
 	
 	/**
