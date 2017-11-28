@@ -1,5 +1,6 @@
 package nn.core;
 
+import java.io.*;
 import java.util.*;
 
 public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeuralNetwork {
@@ -136,20 +137,34 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 	}
 	
 	static public void main(String[] args) {
-		
-		double[] X = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
-		double[] Y = {0.1, 0.2};
-		
 		ArrayList<Example> examples = new ArrayList<Example>();
-		examples.add(new Example(X, Y));
-		examples.add(new Example(X, Y));
-		examples.add(new Example(X, Y));
 		
-		InputUnit[] in = new InputUnit[X.length];
-		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[Y.length];
-		int[] x = {2,3};
+		try (BufferedReader br = new BufferedReader(new FileReader("D:/Jossome/Programs/AI/project4/Machine-learning/src/nn/core/iris.data.txt"))) {
+			String line = "";
+            while ((line = br.readLine()) != null) {
+                String[] sample = line.split(",");
+                double[] X = Arrays.stream(Arrays.copyOfRange(sample, 0, sample.length - 1)).mapToDouble(Double::parseDouble).toArray();
+        		double[] Y = new double[1];
+                switch (sample[sample.length - 1]) {
+        		case "Iris-setosa":
+        			Y[0] = 1;
+        		case "Iris-versicolor":
+        			Y[0] = 2;
+        		case "Iris-virginica":
+        			Y[0] = 3;
+        		}
+        		examples.add(new Example(X, Y));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+		
+		InputUnit[] in = new InputUnit[4];
+		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[1];
+		int[] x = {3,2};
 		
 		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, x, 0.1, 10);
+		nn.dump();
 		nn.backPropLearning(examples);
 		nn.dump();
 	}
