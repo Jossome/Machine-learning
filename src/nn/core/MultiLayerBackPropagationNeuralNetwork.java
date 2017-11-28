@@ -77,12 +77,50 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		}
 	}
 	
+	public double accuracy(List<Example> examples) {
+		int correct = 0;			
+		for (Example eg: examples) {
+			// Pass input value to the network.
+			for (int i = 0; i < eg.inputs.length; i++) {
+				// This line may affect 
+				// this.layers[0][i] = new InputUnit();
+				((InputUnit) this.layers[0][i]).setOutput(eg.inputs[i]);
+			}
+			
+			// Propagate the inputs forward to compute the outputs
+			for (int i = 1; i < this.layers.length; i++) {
+				for (int j = 0; j < this.layers[i].length; j++) { 
+					// for each node do these: 
+					this.layers[i][j].fire();
+				}
+			}
+			
+			for (int i = 0; i < this.outputs.length; i++) {
+				SigmoidNeuronUnit unit = (SigmoidNeuronUnit) this.outputs[i];
+				int a_j = unit.getOutput() >= 0.5 ? 1 : 0;
+				if (a_j - eg.outputs[i] < 0.1) correct++;
+			}
+		}
+		
+		double acc = (double)correct / examples.size();
+		// System.out.println(acc);
+		return acc;
+	}
+	
 	public void backPropLearning(ArrayList<Example> examples) {
 		int cnt = 0; // Used for counting epochs.
+		double error = 0.0;
+		
+		// Split dataset into 7:3 as training and test sets
+		Collections.shuffle(examples);
+		int split = (new Double(examples.size() * 0.7)).intValue();
+		List<Example> train = examples.subList(0, split);
+		List<Example> test = examples.subList(split, examples.size());
+		
 		do {
 			this.setRandomWeights();
-			for (Example eg: examples) {
-				
+			error = 0.0;
+			for (Example eg: train) {
 				// Pass input value to the network.
 				for (int i = 0; i < eg.inputs.length; i++) {
 					// This line may affect 
@@ -104,6 +142,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					double a_j = unit.getOutput();
 					// g'(in) = a_j * (1 - a_j) for logistic activator functions
 					unit.delta = a_j * (1 - a_j) * (eg.outputs[i] - a_j);
+					error += unit.delta * unit.delta;
 					
 					// Update weight
 					for(int k = 0; k < unit.numInputs(); k++) {
@@ -131,8 +170,11 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					}
 				}
 			}
+			error /= examples.size();
 			
-		} while (++cnt < this.epochs);
+			this.trainingReport(test, cnt + 1, error);
+			
+		} while (++cnt < this.epochs && error > 0.01);
 		
 	}
 	
@@ -159,14 +201,13 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
             e.printStackTrace();
         }
 		
-		InputUnit[] in = new InputUnit[4];
-		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[1];
+		InputUnit[] in = new InputUnit[examples.get(0).inputs.length];
+		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[examples.get(0).outputs.length];
 		int[] x = {3,2};
 		
 		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, x, 0.1, 10);
-		nn.dump();
 		nn.backPropLearning(examples);
-		nn.dump();
+		// nn.dump();
 	}
 	
 

@@ -13,8 +13,9 @@ abstract public class NeuralNetwork {
 	 * This method is called after each weight update during training.
 	 * Subclasses can override it to gather statistics or update displays.
 	 */
-	protected void trainingReport(List<Example> examples, int stepnum) {
-		//System.out.println(stepnum + "\t" + accuracy(examples));
+	protected void trainingReport(List<Example> examples, int stepnum, double error) {
+		System.out.println("Epoch: " + stepnum + "\tAccuracy: " + accuracy(examples) + "\tMSE: " + error);
 	}
 	
+	abstract double accuracy(List<Example> examples);
 }

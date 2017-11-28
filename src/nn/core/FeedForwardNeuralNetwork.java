@@ -7,7 +7,7 @@ package nn.core;
  * each unit receives input only from units in the immediately preceding
  * layer.'' (AIMA p729).
  */
-public class FeedForwardNeuralNetwork extends NeuralNetwork {
+public abstract class FeedForwardNeuralNetwork extends NeuralNetwork {
 	
 	/**
 	 * The Units of this FeedForwardNeuralNetwork arranged in
