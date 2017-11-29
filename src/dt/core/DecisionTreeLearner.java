@@ -18,7 +18,8 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 	 * This must be implemented by subclasses.  
 	 */
 	public DecisionTree learn(Set<Example> examples, List<Variable> attributes, Set<Example> parent_examples) {
-		
+		System.out.println(attributes);
+		System.out.println(mostImportantVariable(attributes, examples));
 		if (examples.isEmpty()) {
 			return new DecisionTree(pluralityValue(parent_examples));
 		}
@@ -33,12 +34,7 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 			Variable A = mostImportantVariable(attributes, examples);
 			dTree = new DecisionTree(A);
 			for (String vk: A.domain) {
-				Set<Example> exs = new ArraySet<Example>();
-				for (Example e: examples) {
-					if (e.getInputValue(A).equals(vk)) {
-						exs.add(e);
-					}
-				}
+				Set<Example> exs = examplesWithValueForAttribute(examples, A, vk);
 				
 				// deep copy attributes
 				List<Variable> attributesMinusA = new ArrayList<Variable>();
@@ -64,16 +60,18 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 		for (Example e: examples) {
 			String outputValue = e.getOutputValue();
 			if (!countOutputValue.containsKey(outputValue)) {
-				countOutputValue.put(outputValue, 0);
+				countOutputValue.put(outputValue, 1);
 			}
 			else {
 				countOutputValue.put(outputValue, countOutputValue.get(outputValue) + 1);
 			}
 		}
+		System.out.println(countOutputValue);
 		int maxCount = 0;
 		String commonValue = null;
 		for (String s: countOutputValue.keySet()) {
 			if (countOutputValue.get(s) > maxCount) {
+				maxCount = countOutputValue.get(s);
 				commonValue = s;
 			}
 		}
