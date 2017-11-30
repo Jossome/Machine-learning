@@ -2,6 +2,7 @@ package dt.core;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +19,7 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 	 * This must be implemented by subclasses.  
 	 */
 	public DecisionTree learn(Set<Example> examples, List<Variable> attributes, Set<Example> parent_examples) {
-		System.out.println(attributes);
-		System.out.println(mostImportantVariable(attributes, examples));
+		
 		if (examples.isEmpty()) {
 			return new DecisionTree(pluralityValue(parent_examples));
 		}
@@ -66,11 +66,10 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 				countOutputValue.put(outputValue, countOutputValue.get(outputValue) + 1);
 			}
 		}
-		System.out.println(countOutputValue);
 		int maxCount = 0;
 		String commonValue = null;
 		for (String s: countOutputValue.keySet()) {
-			if (countOutputValue.get(s) > maxCount) {
+			if (countOutputValue.get(s) >= maxCount) {
 				maxCount = countOutputValue.get(s);
 				commonValue = s;
 			}
@@ -83,24 +82,14 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 	 * is there is only one, otherwise null.
 	 */
 	public String uniqueOutputValue(Set<Example> examples) {
-		HashMap<String, Integer> countOutputValue = new HashMap<String, Integer>();
-		for (Example e: examples) {
-			String outputValue = e.getOutputValue();
-			if (!countOutputValue.containsKey(outputValue)) {
-				countOutputValue.put(outputValue, 1);
-			}
-			else {
-				countOutputValue.put(outputValue, countOutputValue.get(outputValue) + 1);
+		Iterator<Example> iter = examples.iterator();
+		String unique = iter.next().getOutputValue();
+		while(iter.hasNext()) {
+			if(!unique.equals(iter.next().getOutputValue())) {
+				return "null";
 			}
 		}
-		if (countOutputValue.size() == 1) {
-			String uniqueValue = countOutputValue.keySet().iterator().next();
-			return uniqueValue;
-		}
-		else {
-			//cannot return null, since the type of return is String
-			return "null";
-		}
+		return unique;
 	}
 	
 	/**
