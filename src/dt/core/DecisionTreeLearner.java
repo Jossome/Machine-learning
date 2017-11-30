@@ -87,7 +87,7 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 		for (Example e: examples) {
 			String outputValue = e.getOutputValue();
 			if (!countOutputValue.containsKey(outputValue)) {
-				countOutputValue.put(outputValue, 0);
+				countOutputValue.put(outputValue, 1);
 			}
 			else {
 				countOutputValue.put(outputValue, countOutputValue.get(outputValue) + 1);
