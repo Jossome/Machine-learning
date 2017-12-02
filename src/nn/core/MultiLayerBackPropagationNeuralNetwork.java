@@ -76,7 +76,8 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		for (int i = 1; i < this.layers.length; i++) {
             for (int j = 0; j < this.layers[i].length; j++) {
                 for (int k = 0; k < this.layers[i - 1].length; k++) {
-                    ((NeuronUnit) this.layers[i][j]).setWeight(k, (new Random()).nextDouble());
+                    // Some negative weights can make nn converge faster and perform better.
+                    ((NeuronUnit) this.layers[i][j]).setWeight(k, (new Random()).nextDouble() * 2 - 1);
                 }
             }
 		}
@@ -100,15 +101,19 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 				}
 			}
 			
+			int tmp = 0;
 			for (int i = 0; i < this.outputs.length; i++) {
 				SigmoidNeuronUnit unit = (SigmoidNeuronUnit) this.outputs[i];
-				int a_j = unit.getOutput() >= 0.5 ? 1 : 0;
-				if (a_j - eg.outputs[i] < 0.1) correct++;
+                // System.out.format("%.2f\t", unit.getOutput());
+                // System.out.format("%.2f\t", eg.outputs[i]);
+				double a_j = unit.getOutput() >= 0.5 ? 1 : 0;
+				if (Math.abs(a_j - eg.outputs[i]) < 0.01) tmp++;
 			}
+            // System.out.println(tmp);
+			if (tmp == this.outputs.length) correct++;
 		}
 		
 		double acc = (double)correct / examples.size();
-		// System.out.println(acc);
 		return acc;
 	}
 	
@@ -176,6 +181,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 				}
 			}
 			error /= examples.size();
+            error /= this.outputs.length;
 			
 			this.trainingReport(test, cnt + 1, error);
 			
@@ -191,14 +197,14 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
             while ((line = br.readLine()) != null) {
                 String[] sample = line.split(",");
                 double[] X = Arrays.stream(Arrays.copyOfRange(sample, 0, sample.length - 1)).mapToDouble(Double::parseDouble).toArray();
-        		double[] Y = new double[1];
+        		double[] Y = new double[3];
                 switch (sample[sample.length - 1]) {
         		case "Iris-setosa":
-        			Y[0] = 1; break;
+        			Y[0] = 1; Y[1] = 0; Y[2] = 0; break;
         		case "Iris-versicolor":
-        			Y[0] = 2; break;
+        			Y[0] = 0; Y[1] = 1; Y[2] = 0; break;
         		case "Iris-virginica":
-        			Y[0] = 3; break;
+        			Y[0] = 0; Y[1] = 0; Y[2] = 1; break;
         		}
         		examples.add(new Example(X, Y));
             }
