@@ -146,19 +146,22 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					}
 				}
 				
+				double dist = 0;
 				// Propagate deltas backward from output layer to input layer
 				for (int i = 0; i < this.outputs.length; i++) {
 					SigmoidNeuronUnit unit = (SigmoidNeuronUnit) this.outputs[i];
 					double a_j = unit.getOutput();
 					// g'(in) = a_j * (1 - a_j) for logistic activator functions
 					unit.delta = a_j * (1 - a_j) * (eg.outputs[i] - a_j);
-					error += unit.delta * unit.delta;
+					dist += (eg.outputs[i] - a_j) * (eg.outputs[i] - a_j);
 					
 					// Update weight
 					for(int k = 0; k < unit.numInputs(); k++) {
 						unit.setWeight(k, unit.getWeight(k) + this.alpha * unit.delta * unit.getInputValue(k));
 					}
 				}
+				dist /= this.outputs.length;
+				error += Math.sqrt(dist);
 				
 				for (int i = this.layers.length - 2; i >= 1; i--) {
 					for (int j = 0; j < this.layers[i].length; j++) {
@@ -189,6 +192,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		
 	}
 
+	// Just load the Iris dataset from filename and return examples.
     public ArrayList<Example> readIrisExamples(String filename) {
 		ArrayList<Example> examples = new ArrayList<Example>();
 		
