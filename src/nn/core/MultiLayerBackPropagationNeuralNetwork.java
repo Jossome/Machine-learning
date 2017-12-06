@@ -11,7 +11,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 	 * and double for learning rate (alpha). Length of hidden is the number of hidden
 	 * layers and each element of hidden is the number of units in each hidden layer.
 	 */
-	public MultiLayerBackPropagationNeuralNetwork(InputUnit[] inputs, SigmoidNeuronUnit[] outputs, int[] hidden, double alpha, int epochs) {
+	public MultiLayerBackPropagationNeuralNetwork(InputUnit[] inputs, SigmoidNeuronUnit[] outputs, int[] hidden, double alpha, double threshold, int epochs, int fold) {
 		super(new Unit[2 + hidden.length][]);
 		this.layers[0] = inputs;
 		for (int i = 0; i < inputs.length; i++) this.layers[0][i] = new InputUnit();
@@ -40,11 +40,15 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		this.inputs = inputs;
 		this.outputs = outputs;
 		this.alpha = alpha;
+        this.threshold = threshold;
 		this.epochs = epochs;
+        this.fold = this.fold;
 	}
 
 	protected double alpha;
 	protected int epochs;
+    protected double threshold;
+    protected int fold;
 	protected InputUnit[] inputs;
 	protected NeuronUnit[] outputs;
 
@@ -152,13 +156,16 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 	public void learn(List<Example> examples) {
 		int cnt = 0; // Used for counting epochs.
 		
-		/*
-		// Split dataset into 7:3 as training and test sets
-		Collections.shuffle(examples);
-		int split = (new Double(examples.size() * 0.7)).intValue();
-		List<Example> train = examples.subList(0, split);
-		List<Example> test = examples.subList(split, examples.size());
-		*/
+
+    	// Split dataset into 7:3 as training and test sets
+    	Collections.shuffle(examples);
+    	int split = (new Double(examples.size() * 0.7)).intValue();
+    	List<Example> train = new ArrayList<Example>(examples.subList(0, split));
+    	List<Example> test = new ArrayList<Example>(examples.subList(split, examples.size()));
+        
+        if (this.fold == 0) {
+            examples = train;
+        }		
 		
 	    this.setRandomWeights();
 		do {
@@ -211,10 +218,10 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					}
 				}
 			}
+		
+            this.trainingReport(examples, cnt + 1);
 			
-			this.trainingReport(examples, cnt + 1);
-			
-		} while (++cnt < this.epochs);
+		} while (++cnt < this.epochs && mse(examples) > this.threshold);
 		
 	}	
 	
@@ -280,10 +287,11 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
         // alpha(learning rate), threshold(if error reaches below this, stop learning)
         String filename = args[0];
         int indim = Integer.parseInt(args[1]);
-        int[] hidden = Arrays.stream(Arrays.copyOfRange(args, 2, args.length - 4)).mapToInt(Integer::parseInt).toArray();
-        int outdim = Integer.parseInt(args[args.length - 4]);
-        int epoch = Integer.parseInt(args[args.length - 3]);
-        double alpha = Double.parseDouble(args[args.length - 2]);
+        int[] hidden = Arrays.stream(Arrays.copyOfRange(args, 2, args.length - 5)).mapToInt(Integer::parseInt).toArray();
+        int outdim = Integer.parseInt(args[args.length - 5]);
+        int epoch = Integer.parseInt(args[args.length - 4]);
+        double alpha = Double.parseDouble(args[args.length - 3]);
+        double stop = Double.parseDouble(args[args.length - 2]);
         int k = Integer.parseInt(args[args.length - 1]);
 	   
         System.out.println("NN structure: " + indim + "->" + Arrays.toString(hidden) + "->" + outdim);
@@ -297,11 +305,15 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		ArrayList<Example> examples = readIrisExamples(filename);
 		
 		
-		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, hidden, alpha, epoch);
-        
-		double[] res = crossValidation(nn, k, examples);
-		System.out.println(res[0]);
-		System.out.println(res[1]);
+		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, hidden, alpha, stop, epoch, k);
+       
+        if (k == 0) {
+            nn.learn(examples);
+        } else {
+    		double[] res = crossValidation(nn, k, examples);
+	    	// System.out.println(res[0]);
+		    System.out.println(res[1]);
+        }
 		
 		// nn.dump();
 	}
