@@ -11,7 +11,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 	 * and double for learning rate (alpha). Length of hidden is the number of hidden
 	 * layers and each element of hidden is the number of units in each hidden layer.
 	 */
-	public MultiLayerBackPropagationNeuralNetwork(InputUnit[] inputs, SigmoidNeuronUnit[] outputs, int[] hidden, double alpha, int epochs, double threshold) {
+	public MultiLayerBackPropagationNeuralNetwork(InputUnit[] inputs, SigmoidNeuronUnit[] outputs, int[] hidden, double alpha, int epochs) {
 		super(new Unit[2 + hidden.length][]);
 		this.layers[0] = inputs;
 		for (int i = 0; i < inputs.length; i++) this.layers[0][i] = new InputUnit();
@@ -41,12 +41,10 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		this.outputs = outputs;
 		this.alpha = alpha;
 		this.epochs = epochs;
-        this.threshold = threshold;
 	}
 
 	protected double alpha;
 	protected int epochs;
-    protected double threshold;
 	protected InputUnit[] inputs;
 	protected NeuronUnit[] outputs;
 
@@ -117,20 +115,54 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		return acc;
 	}
 	
-	public void backPropLearning(ArrayList<Example> examples) {
-		int cnt = 0; // Used for counting epochs.
-		double error = 0.0;
+	public double mse(List<Example> examples) {
+		double error = 0.0;			
+		for (Example eg: examples) {
+			// Pass input value to the network.
+			for (int i = 0; i < eg.inputs.length; i++) {
+				// This line may affect 
+				// this.layers[0][i] = new InputUnit();
+				((InputUnit) this.layers[0][i]).setOutput(eg.inputs[i]);
+			}
+			
+			// Propagate the inputs forward to compute the outputs
+			for (int i = 1; i < this.layers.length; i++) {
+				for (int j = 0; j < this.layers[i].length; j++) { 
+					// for each node do these: 
+					this.layers[i][j].fire();
+				}
+			}
+			
+			double dist = 0;
+			// Propagate deltas backward from output layer to input layer
+			for (int i = 0; i < this.outputs.length; i++) {
+				SigmoidNeuronUnit unit = (SigmoidNeuronUnit) this.outputs[i];
+				double a_j = unit.getOutput();
+				dist += (eg.outputs[i] - a_j) * (eg.outputs[i] - a_j);
+			}
+			dist /= this.outputs.length;
+			error += Math.sqrt(dist);
+		}
 		
+		error /= examples.size();
+        error /= this.outputs.length;
+		return error;
+	}
+	
+	public void learn(List<Example> examples) {
+		int cnt = 0; // Used for counting epochs.
+		
+		/*
 		// Split dataset into 7:3 as training and test sets
 		Collections.shuffle(examples);
 		int split = (new Double(examples.size() * 0.7)).intValue();
 		List<Example> train = examples.subList(0, split);
 		List<Example> test = examples.subList(split, examples.size());
+		*/
 		
 	    this.setRandomWeights();
 		do {
-			error = 0.0;
-			for (Example eg: train) {
+			for (Example eg: examples) {
 				// Pass input value to the network.
 				for (int i = 0; i < eg.inputs.length; i++) {
 					// This line may affect 
@@ -146,22 +178,18 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					}
 				}
 				
-				double dist = 0;
 				// Propagate deltas backward from output layer to input layer
 				for (int i = 0; i < this.outputs.length; i++) {
 					SigmoidNeuronUnit unit = (SigmoidNeuronUnit) this.outputs[i];
 					double a_j = unit.getOutput();
 					// g'(in) = a_j * (1 - a_j) for logistic activator functions
 					unit.delta = a_j * (1 - a_j) * (eg.outputs[i] - a_j);
-					dist += (eg.outputs[i] - a_j) * (eg.outputs[i] - a_j);
 					
 					// Update weight
 					for(int k = 0; k < unit.numInputs(); k++) {
 						unit.setWeight(k, unit.getWeight(k) + this.alpha * unit.delta * unit.getInputValue(k));
 					}
 				}
-				dist /= this.outputs.length;
-				error += Math.sqrt(dist);
 				
 				for (int i = this.layers.length - 2; i >= 1; i--) {
 					for (int j = 0; j < this.layers[i].length; j++) {
@@ -183,17 +211,44 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 					}
 				}
 			}
-			error /= examples.size();
-            error /= this.outputs.length;
 			
-			this.trainingReport(test, cnt + 1, error);
+			this.trainingReport(examples, cnt + 1);
 			
-		} while (++cnt < this.epochs && error > this.threshold);
+		} while (++cnt < this.epochs);
+		
+	}	
+	
+	
+	public static double[] crossValidation(MultiLayerBackPropagationNeuralNetwork nn, int k, ArrayList<Example> examples) {
+		
+		double errT = 0;
+		double errV = 0;
+		
+		Collections.shuffle(examples);
+		
+		for (int fold = 1; fold <= k; fold++) {
+			int split1 = (new Double(examples.size() * (fold-1) / k)).intValue();
+			int split2 = (new Double(examples.size() * fold / k)).intValue();
+			List<Example> train = new ArrayList<Example>(examples.subList(0, split1));
+			train.addAll(examples.subList(split2, examples.size()));
+			List<Example> test = new ArrayList<Example>(examples.subList(split1, split2));
+			nn.learn(train);
+			System.out.format("%dfold, train size %d, test size %d\n", fold, train.size(), test.size());
+			errT += nn.mse(train);
+			errV += nn.mse(test);
+		}
+		
+		double[] res = new double[2];
+		res[0] = errT / k;
+		res[1] = errV / k;
+		
+		return res;
+		
 		
 	}
 
 	// Just load the Iris dataset from filename and return examples.
-    public ArrayList<Example> readIrisExamples(String filename) {
+    public static ArrayList<Example> readIrisExamples(String filename) {
 		ArrayList<Example> examples = new ArrayList<Example>();
 		
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
@@ -229,20 +284,25 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
         int outdim = Integer.parseInt(args[args.length - 4]);
         int epoch = Integer.parseInt(args[args.length - 3]);
         double alpha = Double.parseDouble(args[args.length - 2]);
-        double threshold = Double.parseDouble(args[args.length - 1]);
+        int k = Integer.parseInt(args[args.length - 1]);
 	   
         System.out.println("NN structure: " + indim + "->" + Arrays.toString(hidden) + "->" + outdim);
         System.out.println("Epochs: " + epoch);
         System.out.println("Learning rate: " + alpha);
-        System.out.println("Stop criteria: " + threshold);
+        System.out.println("CV folds: " + k);
         System.out.println("Start training:");
         
 		InputUnit[] in = new InputUnit[indim];
 		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[outdim];
-	
-		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, hidden, alpha, epoch, threshold);
-        ArrayList<Example> examples = nn.readIrisExamples(filename);
-		nn.backPropLearning(examples);
+		ArrayList<Example> examples = readIrisExamples(filename);
+		
+		
+		MultiLayerBackPropagationNeuralNetwork nn = new MultiLayerBackPropagationNeuralNetwork(in, out, hidden, alpha, epoch);
+        
+		double[] res = crossValidation(nn, k, examples);
+		System.out.println(res[0]);
+		System.out.println(res[1]);
+		
 		// nn.dump();
 	}
 	

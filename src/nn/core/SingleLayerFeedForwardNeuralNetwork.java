@@ -65,12 +65,18 @@ public class SingleLayerFeedForwardNeuralNetwork extends FeedForwardNeuralNetwor
 			for (int j=0; j < this.outputs.length; j++) {
 				this.outputs[j].update(ex.inputs, ex.outputs[j], alpha);
 			}
-			this.trainingReport(examples, i, 0);
+			this.trainingReport(examples, i);
 		}
 	}
 
 	@Override
 	double accuracy(List<Example> examples) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	double mse(List<Example> examples) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
