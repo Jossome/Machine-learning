@@ -42,7 +42,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 		this.alpha = alpha;
         this.threshold = threshold;
 		this.epochs = epochs;
-        this.fold = this.fold;
+        this.fold = fold;
 	}
 
 	protected double alpha;
@@ -219,9 +219,14 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 				}
 			}
 		
-            this.trainingReport(examples, cnt + 1);
+            // this.trainingReport(examples, cnt + 1);
 			
 		} while (++cnt < this.epochs && mse(examples) > this.threshold);
+        
+        if (this.fold == 0) {
+            System.out.print("MSE: ");
+            System.out.println(mse(test));
+        }
 		
 	}	
 	
@@ -240,7 +245,7 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
 			train.addAll(examples.subList(split2, examples.size()));
 			List<Example> test = new ArrayList<Example>(examples.subList(split1, split2));
 			nn.learn(train);
-			System.out.format("%dfold, train size %d, test size %d\n", fold, train.size(), test.size());
+			// System.out.format("%dfold, train size %d, test size %d\n", fold, train.size(), test.size());
 			errT += nn.mse(train);
 			errV += nn.mse(test);
 		}
@@ -297,8 +302,9 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
         System.out.println("NN structure: " + indim + "->" + Arrays.toString(hidden) + "->" + outdim);
         System.out.println("Epochs: " + epoch);
         System.out.println("Learning rate: " + alpha);
+        System.out.println("Stop threshold: " + stop);
         System.out.println("CV folds: " + k);
-        System.out.println("Start training:");
+        System.out.println("Training results:");
         
 		InputUnit[] in = new InputUnit[indim];
 		SigmoidNeuronUnit[] out = new SigmoidNeuronUnit[outdim];
@@ -311,7 +317,9 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
             nn.learn(examples);
         } else {
     		double[] res = crossValidation(nn, k, examples);
-	    	// System.out.println(res[0]);
+	    	System.out.print("errT: ");
+            System.out.println(res[0]);
+	    	System.out.print("errV: ");
 		    System.out.println(res[1]);
         }
 		
