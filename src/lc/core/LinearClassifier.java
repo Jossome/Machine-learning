@@ -3,11 +3,14 @@ package lc.core;
 import java.util.List;
 import java.util.Random;
 
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
+
 import math.util.VectorOps;
 
 abstract public class LinearClassifier {
 	
 	double[] weights;
+	double last_accuracy;
 	
 	public LinearClassifier(double[] weights) {
 		this.weights = weights;
@@ -105,5 +108,11 @@ abstract public class LinearClassifier {
 		}
 		return (double)ncorrect / examples.size();
 	}
+	
+	public double get_last_accuracy(List<Example> test) {
+		return accuracy(test);
+	}
+	
+	abstract public double crossValidation(List<Example> examples, int k, int nsteps, double alpha);
 
 }

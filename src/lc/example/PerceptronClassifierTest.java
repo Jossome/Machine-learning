@@ -3,6 +3,8 @@ package lc.example;
 import java.io.IOException;
 import java.util.List;
 
+//import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
+
 import lc.core.Example;
 import lc.core.LearningRateSchedule;
 import lc.core.PerceptronClassifier;
@@ -39,11 +41,16 @@ public class PerceptronClassifierTest {
 		};
 		if (alpha > 0) {
 			classifier.train(examples, nsteps, alpha);
+			
 		} else {
 			classifier.train(examples, 100000, new LearningRateSchedule() {
 				public double alpha(int t) { return 1000.0/(1000.0+t); }
 			});
 		}
+		
+		//cross validation
+		double error_rate = classifier.crossValidation(examples, 10, nsteps, alpha);
+		System.out.format("cross validation error rate: %f%%, correct: %f%%\n", error_rate * 100, (1 - error_rate) * 100);
 	}
 
 }

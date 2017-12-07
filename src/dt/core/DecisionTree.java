@@ -105,5 +105,19 @@ public class DecisionTree {
 		double pct = (double)ncorrect / ntested * 100;
 		System.out.format("correct: %d/%d (%.2f)%%\n", ncorrect, ntested, pct);
 	}
+	
+	public double error_rate(Set<Example> examples) {
+		int ntested = 0;
+		int ncorrect = 0;
+		for (Example e : examples) {
+			String result = this.eval(e);
+			ntested += 1;
+			if (result.equals(e.getOutputValue())) {
+				ncorrect += 1;
+			}
+		}
+		double pct = (double)ncorrect / ntested * 100;
+		return 100 - pct;
+	}
 
 }

@@ -16,7 +16,7 @@ public class LogisticClassifierTest {
 	 */
 	public static void main(String[] argv) throws IOException {
 		if (argv.length < 3) {
-			System.out.println("usage: java PerceptronClassifierTest data-filename nsteps alpha");
+			System.out.println("usage: java LogisticClassifierTest data-filename nsteps alpha");
 			System.out.println("       specify alpha=0 to use decaying learning rate schedule (AIMA p725)");
 			System.exit(-1);
 		}
@@ -27,7 +27,7 @@ public class LogisticClassifierTest {
 		System.out.println("nsteps: " + nsteps);
 		System.out.println("alpha: " + alpha);
 		
-		ClassifierDisplay display = new ClassifierDisplay("PerceptronClassifier: " + filename);
+		ClassifierDisplay display = new ClassifierDisplay("LogisticClassifier: " + filename);
 		List<Example> examples = Data.readFromFile(filename);
 		int ninputs = examples.get(0).inputs.length; 
 		LogisticClassifier classifier = new LogisticClassifier(ninputs) {
@@ -50,11 +50,16 @@ public class LogisticClassifierTest {
 		};
 		if (alpha > 0) {
 			classifier.train(examples, nsteps, alpha);
+			
 		} else {
 			classifier.train(examples, 100000, new LearningRateSchedule() {
 				public double alpha(int t) { return 1000.0/(1000.0+t); }
 			});
 		}
+		
+		//cross validation
+		double error_rate = classifier.crossValidation(examples, 10, nsteps, alpha);
+		System.out.format("cross validation error rate: %f%%, correct: %f%%\n", error_rate * 100, (1 - error_rate) * 100);
 	}
 
 }

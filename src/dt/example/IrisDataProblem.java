@@ -33,9 +33,12 @@ public class IrisDataProblem extends Problem{
 		for (Example e: examples) {
 			System.out.println(e);
 		}
-		DecisionTree tree = new DecisionTreeLearner(problem).learn(examples);
+		DecisionTreeLearner learner = new DecisionTreeLearner(problem);
+		DecisionTree tree = learner.learn(examples);
 		tree.dump();
 		tree.test(examples);
+		double error_rate = learner.crossValidation(learner, examples, 10);
+		System.out.format("cross validation error rate: %f%%, correct: %f%%\n", error_rate, 100 - error_rate);
 	}
 
 }
