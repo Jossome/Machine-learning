@@ -24,12 +24,13 @@ public class IrisDataProblem extends Problem{
 		// Output variable
 		this.output = new Variable("irisClass", new Domain("Iris-setosa", "Iris-versicolor", "Iris-virginica"));
 	}
-	
+
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 		IrisDataProblem problem = new IrisDataProblem();
 		problem.dump();
 		Set<Example> examples = problem.readExamplesFromCSVFile(new File(args[0]));
+        int k = Integer.parseInt(args[1]);
 		for (Example e: examples) {
 			System.out.println(e);
 		}
@@ -37,7 +38,7 @@ public class IrisDataProblem extends Problem{
 		DecisionTree tree = learner.learn(examples);
 		tree.dump();
 		tree.test(examples);
-		double error_rate = learner.crossValidation(learner, examples, 10);
+		double error_rate = learner.crossValidation(learner, examples, k);
 		System.out.format("cross validation error rate: %f%%, correct: %f%%\n", error_rate, 100 - error_rate);
 	}
 
