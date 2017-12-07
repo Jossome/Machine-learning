@@ -226,6 +226,8 @@ public class MultiLayerBackPropagationNeuralNetwork extends BackPropagationNeura
         if (this.fold == 0) {
             System.out.print("MSE: ");
             System.out.println(mse(test));
+            System.out.print("Accuracy: ");
+            System.out.println(accuracy(test));
         }
 		
 	}	
