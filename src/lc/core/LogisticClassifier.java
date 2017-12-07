@@ -47,7 +47,7 @@ public class LogisticClassifier extends LinearClassifier{
 
 		for (int fold = 1; fold <= k; fold++) {
 			int split1 = (new Double(examples.size() * (fold - 1) / k)).intValue();
-			int split2 = (new Double(examples.size() * fold / k)).intValue();
+			int split2 = (new Double(examples.size() * fold / k - 1)).intValue();
 			List<Example> train = new ArrayList<Example>(examples.subList(0, split1));
 			train.addAll(examples.subList(split2, examples.size()));
 			List<Example> test = new ArrayList<Example>(examples.subList(split1, split2));

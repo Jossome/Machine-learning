@@ -137,7 +137,7 @@ public class DecisionTreeLearner extends AbstractDecisionTreeLearner{
 		
 		for (int fold = 1; fold <= k; fold++) {
 			int split1 = (new Double(list_examples.size() * (fold-1) / k)).intValue();
-			int split2 = (new Double(list_examples.size() * fold / k)).intValue();
+			int split2 = (new Double(list_examples.size() * fold / k - 1)).intValue();
 			Set<Example> train = new ArraySet<Example>(list_examples.subList(0, split1));
 			train.addAll(list_examples.subList(split2, list_examples.size()));
 			Set<Example> test = new ArraySet<Example>(list_examples.subList(split1, split2));
