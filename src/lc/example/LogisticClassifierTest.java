@@ -23,6 +23,7 @@ public class LogisticClassifierTest {
 		String filename = argv[0];
 		int nsteps = Integer.parseInt(argv[1]);
 		double alpha = Double.parseDouble(argv[2]);
+		int k = Integer.parseInt(argv[3]);
 		System.out.println("filename: " + filename);
 		System.out.println("nsteps: " + nsteps);
 		System.out.println("alpha: " + alpha);
@@ -58,7 +59,7 @@ public class LogisticClassifierTest {
 		}
 		
 		//cross validation
-		double error_rate = classifier.crossValidation(examples, 10, nsteps, alpha);
+		double error_rate = classifier.crossValidation(examples, k, nsteps, alpha);
 		System.out.format("cross validation error rate: %f%%, correct: %f%%\n", error_rate * 100, (1 - error_rate) * 100);
 	}
 
